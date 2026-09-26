@@ -38,7 +38,7 @@ if [ -z "$PAPER_VERSION" ]; then
   paper_version="$(
     printf '%s' "$paper_json" |
       grep -o '"version":{"id":"[^"]*"' |
-      head -n 1 |
+      sed -n '1p' |
       sed 's/.*"id":"//; s/"$//'
   )"
 else
@@ -50,7 +50,7 @@ version_json="$(curl -fsSL "$PAPER_API/versions/$paper_version")"
 java_required="$(
   printf '%s' "$version_json" |
     grep -o '"minimum":[0-9]*' |
-    head -n 1 |
+    sed -n '1p' |
     sed 's/[^0-9]//g'
 )"
 [ -n "$java_required" ] || die "Could not determine the Java version required by Paper $paper_version."
@@ -60,13 +60,18 @@ java_required="$(
 if ! pkg install -y "openjdk-$java_required"; then
   die "Termux could not install OpenJDK $java_required required by Paper $paper_version. Set PAPER_VERSION to an older compatible release or update Termux."
 fi
-java -version 2>&1 | head -n 1
+
+java_home="$PREFIX/lib/jvm/java-${java_required}-openjdk"
+java_bin="$java_home/bin/java"
+[ -x "$java_bin" ] || die "OpenJDK $java_required is installed but its Java binary was not found at $java_bin."
+java_version="$("$java_bin" -version 2>&1 | sed -n '1p')"
+printf '%s\n' "$java_version"
 
 build_json="$(curl -fsSL "$PAPER_API/versions/$paper_version/builds")"
 paper_build="$(
   printf '%s' "$build_json" |
     grep -o '"id":[0-9]*' |
-    head -n 1 |
+    sed -n '1p' |
     sed 's/[^0-9]//g'
 )"
 [ -n "$paper_build" ] || die "Could not determine the latest Paper build."
@@ -74,13 +79,13 @@ paper_build="$(
 paper_url="$(
   printf '%s' "$build_json" |
     grep -o '"url":"https://[^"]*paper-[^"]*\.jar"' |
-    head -n 1 |
+    sed -n '1p' |
     sed 's/.*"url":"//; s/"$//'
 )"
 paper_jar="$(
   printf '%s' "$build_json" |
     grep -o '"name":"paper-[^"]*\.jar"' |
-    head -n 1 |
+    sed -n '1p' |
     sed 's/.*"name":"//; s/"$//'
 )"
 [ -n "$paper_url" ] || die "Could not determine the Paper download URL."
@@ -114,7 +119,7 @@ download_modrinth_plugin() {
   plugin_url="$(
     printf '%s' "$versions_json" |
       grep -o '"url":"https://[^"]*\.jar"' |
-      head -n 1 |
+      sed -n '1p' |
       sed 's/.*"url":"//; s/"$//'
   )"
   [ -n "$plugin_url" ] || die "Could not find a Paper build for Modrinth project $slug."
@@ -138,7 +143,7 @@ download_github_jar() {
       grep -o '"browser_download_url":[^,]*' |
       sed 's/.*"browser_download_url":[[:space:]]*"//; s/"$//' |
       grep -E "/${name}-[^/]+\.jar$" |
-      head -n 1 || true
+      sed -n '1p' || true
   )"
   [ -n "$asset_url" ] || die "Could not find the latest $name plugin from GitHub."
   download_plugin "$asset_url" "$name.jar"
@@ -174,6 +179,8 @@ cat > server.env <<EOF
 # Edit this file to change memory, ports, or the server directory.
 SERVER_DIR=$SERVER_DIR
 MC_MEMORY=$MC_MEMORY
+JAVA_HOME="$java_home"
+JAVA_BIN="$java_bin"
 JAVA_FLAGS="-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200"
 EOF
 

@@ -12,6 +12,7 @@ fi
 
 SERVER_DIR="${SERVER_DIR:-$SCRIPT_DIR}"
 MC_MEMORY="${MC_MEMORY:-1G}"
+JAVA_BIN="${JAVA_BIN:-java}"
 JAVA_FLAGS="${JAVA_FLAGS:--XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200}"
 FIFO="$SERVER_DIR/.minecraft-console"
 PID_FILE="$SERVER_DIR/server.pid"
@@ -36,7 +37,7 @@ trap cleanup EXIT INT TERM
 echo "Starting Paper with $MC_MEMORY RAM..."
 # The FIFO lets this script safely reload Geyser after its first config file is
 # generated, without requiring screen/tmux.
-java $JAVA_FLAGS -Xms"$MC_MEMORY" -Xmx"$MC_MEMORY" -jar paper.jar --nogui \
+"$JAVA_BIN" $JAVA_FLAGS -Xms"$MC_MEMORY" -Xmx"$MC_MEMORY" -jar paper.jar --nogui \
   < "$FIFO" 2>&1 | tee -a server.log &
 server_pid=$!
 echo "$server_pid" > "$PID_FILE"

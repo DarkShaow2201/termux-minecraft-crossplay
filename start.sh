@@ -9,11 +9,19 @@ if [ -f server.env ]; then
   # shellcheck disable=SC1091
   . ./server.env
 fi
+if [ -f network.env ]; then
+  # shellcheck disable=SC1091
+  . ./network.env
+fi
 
 SERVER_DIR="${SERVER_DIR:-$SCRIPT_DIR}"
 MC_MEMORY="${MC_MEMORY:-1G}"
 JAVA_BIN="${JAVA_BIN:-java}"
 JAVA_FLAGS="${JAVA_FLAGS:--XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200}"
+BIND_IP="${BIND_IP:-}"
+ADVERTISE_IP="${ADVERTISE_IP:-}"
+JAVA_PORT="${JAVA_PORT:-25565}"
+BEDROCK_PORT="${BEDROCK_PORT:-19132}"
 FIFO="$SERVER_DIR/.minecraft-console"
 PID_FILE="$SERVER_DIR/server.pid"
 
@@ -21,6 +29,17 @@ PID_FILE="$SERVER_DIR/server.pid"
   echo "paper.jar is missing. Run ./install.sh first."
   exit 1
 }
+
+# Keep the actual server binding configurable without forcing Android's
+# changing Wi-Fi address into the configuration.
+if [ -f server.properties ]; then
+  if grep -q '^server-ip=' server.properties; then
+    sed -i -E "s/^server-ip=.*/server-ip=$BIND_IP/" server.properties
+  else
+    printf '%s\n' "server-ip=$BIND_IP" >> server.properties
+  fi
+  sed -i -E "s/^server-port=.*/server-port=$JAVA_PORT/" server.properties
+fi
 
 if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
   echo "The server is already running (PID $(cat "$PID_FILE"))."
@@ -35,6 +54,10 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 echo "Starting Paper with $MC_MEMORY RAM..."
+if [ -n "$ADVERTISE_IP" ]; then
+  echo "Java players: $ADVERTISE_IP:$JAVA_PORT"
+  echo "Bedrock players: $ADVERTISE_IP:$BEDROCK_PORT"
+fi
 # The FIFO lets this script safely reload Geyser after its first config file is
 # generated, without requiring screen/tmux.
 "$JAVA_BIN" $JAVA_FLAGS -Xms"$MC_MEMORY" -Xmx"$MC_MEMORY" -jar paper.jar --nogui \

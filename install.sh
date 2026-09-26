@@ -181,11 +181,16 @@ EOF
 # when the installer was launched from a downloaded folder.
 cp "$KIT_DIR/start.sh" "$KIT_DIR/stop.sh" "$KIT_DIR/backup.sh" "$SERVER_DIR/"
 cp "$KIT_DIR/setup-access.sh" "$SERVER_DIR/"
+if [ ! -f "$SERVER_DIR/operators.txt" ]; then
+  cp "$KIT_DIR/operators.txt" "$SERVER_DIR/operators.txt"
+fi
+cp "$KIT_DIR/apply-operators.sh" "$SERVER_DIR/"
 cp "$KIT_DIR/tunnel.sh" "$SERVER_DIR/"
 if [ ! -f "$SERVER_DIR/worlds/README.txt" ]; then
   cp "$KIT_DIR/worlds/README.txt" "$SERVER_DIR/worlds/README.txt"
 fi
 chmod +x "$SERVER_DIR/start.sh" "$SERVER_DIR/stop.sh" "$SERVER_DIR/backup.sh"
+chmod +x "$SERVER_DIR/apply-operators.sh"
 chmod +x "$SERVER_DIR/setup-access.sh"
 chmod +x "$SERVER_DIR/tunnel.sh"
 

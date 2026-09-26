@@ -11,6 +11,7 @@ This kit installs a Paper server with:
 - **OnePlayerSleep** — one player can skip the night for everyone.
 - **Ban-list/operator setup** — block selected players while allowing everyone else to join.
 - **Operator note file** — add usernames to `operators.txt` and apply them with one command.
+- **Network settings file** — set the bind address, advertised IP, and ports in `network.env`.
 - **Separate `worlds/` folder** — upload custom worlds without mixing them with plugins and server files.
 
 ## Install on Android
@@ -37,7 +38,7 @@ This kit installs a Paper server with:
 
    ```sh
    cd termux-minecraft
-   chmod +x install.sh start.sh stop.sh backup.sh setup-access.sh tunnel.sh
+   chmod +x install.sh start.sh stop.sh backup.sh setup-access.sh apply-operators.sh tunnel.sh
    ./install.sh
    ./start.sh
    ```
@@ -82,6 +83,33 @@ nano operators.txt
 Lines beginning with `#` and blank lines are ignored. The script sends `op`
 commands through the live server console, so those players can use server
 commands. Only list people you trust.
+
+## Set the server IP address
+
+Edit this file:
+
+```sh
+cd "$HOME/minecraft-server"
+nano network.env
+```
+
+Recommended configuration:
+
+```text
+BIND_IP=
+ADVERTISE_IP=192.168.1.100
+JAVA_PORT=25565
+BEDROCK_PORT=19132
+```
+
+`192.168.1.100` is an example private Wi-Fi address. It works only if your
+router gives that address to the phone. To keep it stable, create a DHCP
+reservation for the phone in your router. Without a reservation, find the
+current address with `ip addr show wlan0` and update `ADVERTISE_IP`.
+
+Leave `BIND_IP` empty in most cases. This lets the server accept connections
+through Wi-Fi, hotspot, and Playit. The local IP is not the public Playit
+address; outside players should use the hostname and port shown by Playit.
 
 ## Uploading a custom world
 

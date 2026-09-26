@@ -1,0 +1,9 @@
+# Add one Minecraft username per line.
+# Lines beginning with # and blank lines are ignored.
+#
+# After editing this file, run:
+#   ./apply-operators.sh
+#
+# Example:
+# Steve
+# Alex

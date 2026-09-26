@@ -188,6 +188,9 @@ EOF
 # when the installer was launched from a downloaded folder.
 cp "$KIT_DIR/start.sh" "$KIT_DIR/stop.sh" "$KIT_DIR/backup.sh" "$SERVER_DIR/"
 cp "$KIT_DIR/setup-access.sh" "$SERVER_DIR/"
+if [ ! -f "$SERVER_DIR/network.env" ]; then
+  cp "$KIT_DIR/network.env" "$SERVER_DIR/network.env"
+fi
 if [ ! -f "$SERVER_DIR/operators.txt" ]; then
   cp "$KIT_DIR/operators.txt" "$SERVER_DIR/operators.txt"
 fi

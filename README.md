@@ -10,19 +10,30 @@ This kit installs a Paper server with:
 - **CoreProtect** — block-change logging and rollback.
 - **OnePlayerSleep** — one player can skip the night for everyone.
 - **Ban-list/operator setup** — block selected players while allowing everyone else to join.
+- **Operator note file** — add usernames to `operators.txt` and apply them with one command.
 - **Separate `worlds/` folder** — upload custom worlds without mixing them with plugins and server files.
 
 ## Install on Android
 
 1. Install Termux from **F-Droid or GitHub**, not the Play Store build.
-2. In Termux, install Git if needed:
+2. Run the one-command installer:
+
+   ```sh
+   curl -fsSL https://raw.githubusercontent.com/DarkShaow2201/termux-minecraft-crossplay/main/install-termux.sh | bash
+   ```
+
+   It clones the installer to `~/termux-minecraft-crossplay`, downloads the
+   current server/plugins, and creates the running server directory at
+   `~/minecraft-server`.
+
+3. For a manual clone, install Git if needed:
 
    ```sh
    pkg update -y
    pkg install -y git
    ```
 
-3. Put this folder in Termux, then run:
+4. Put this folder in Termux, then run:
 
    ```sh
    cd termux-minecraft
@@ -50,6 +61,27 @@ This kit installs a Paper server with:
 
    Android may still stop background processes, so exempt Termux from battery
    optimization in Android settings.
+
+## Add server operators from a file
+
+The server keeps a separate operator list here:
+
+```text
+$HOME/minecraft-server/operators.txt
+```
+
+Edit it and add one Minecraft username per line. Then, while the server is
+running, apply the list:
+
+```sh
+cd "$HOME/minecraft-server"
+nano operators.txt
+./apply-operators.sh
+```
+
+Lines beginning with `#` and blank lines are ignored. The script sends `op`
+commands through the live server console, so those players can use server
+commands. Only list people you trust.
 
 ## Uploading a custom world
 
@@ -155,6 +187,7 @@ break login or world compatibility.
 ./stop.sh                  # save and stop
 ./backup.sh                # archive the worlds/ folders
 ./setup-access.sh          # configure ban list and OPs
+./apply-operators.sh       # grant OP to names in operators.txt
 ./tunnel.sh                # optional public Java + Bedrock tunnel
 tail -f server.log         # inspect startup or connection errors
 ```
